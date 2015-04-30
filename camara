@@ -1,0 +1,64 @@
+var ctx;
+
+PImage currentImage;
+PImage previousImage;
+final int cameraWidth = 1000;
+final int cameraHeight = 640;           
+final float colorChangeThreshold = 100.0;  
+
+
+void setup() { 
+    size(960,640);
+    ctx = externals.context; 
+       video.play();
+}
+
+void draw() {
+    if (!video.available) return;
+    
+ 
+    previousImage = currentImage;  
+    
+    pushMatrix();
+    translate(width,0);
+    scale(-1,1);                                            
+    ctx.drawImage(video, 0, 0, cameraWidth, cameraHeight);  
+    popMatrix();
+    
+    currentImage=get(0,0,cameraWidth,cameraHeight);
+    
+    
+    PImage motionDetectionImage = createImage(cameraWidth/2, cameraHeight/2, RGB);
+    if (currentImage != null && previousImage != null) {    
+        j = 0;
+        for (int i = 0 ; i <  previousImage.pixels.length; i++) {
+           color p1 = previousImage.pixels[i];
+           color p2 = currentImage.pixels[i];
+            color p3 = previousImage.pixels[i];
+           
+           float totalDiff =  abs(red(p3) - red(p2)) + abs( green(p1) - green(p2)) + abs(blue(p1) - blue(p1));
+           
+           if (totalDiff > colorChangeThreshold) { 
+             motionDetectionImage.pixels[j] = color(#FA1414);
+               motionDetectionImage.pixels[j] = color(#54FA14);
+           } else {
+            
+             motionDetectionImage.pixels[j] = color(#1421FA);
+            
+           }           
+           j = j + 1;
+        }
+        image(motionDetectionImage, 0, 0);
+          
+    }
+}
+
+
+private int nextI(int i) {
+  if ( (int)( (int)(i+2) / (int)(cameraWidth) ) % (int) 2 == 0){
+    return i + 2;
+  } else {
+    return i + 2 + cameraWidth % 2 + (cameraWidth*(2-1));
+  }
+}
+
